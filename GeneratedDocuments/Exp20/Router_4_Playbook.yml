@@ -1,0 +1,33 @@
+---
+- name: Define and Apply Network Configuration
+  hosts: R4
+  gather_facts: no
+  tasks:
+    - name: Configure Loopback Interfaces
+      ios_config:
+        parents: 
+          - interface lo0
+          - interface lo1
+        lines:
+          - ip address 192.168.70.1 255.255.255.0
+          - ip address 192.168.80.1 255.255.255.0
+        no_log: true
+      ios_config:
+        parents: 
+          - interface lo0
+          - interface lo1
+        lines:
+          - no shutdown
+        replace: block
+        no_log: true 
+    - name: Configure OSPF
+      ios_config:
+        parents:
+          - router ospf 1
+        lines:
+          - network 192.168.6.0 0.0.0.3 area 100
+          - network 192.168.70.1 0.0.0.255 area 100
+          - network 192.168.80.1 0.0.0.255 area 100
+        replace: block
+        no_log: true
+...

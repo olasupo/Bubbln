@@ -1,0 +1,28 @@
+---
+- name: Ansible playbook to automate Network Configuration
+  hosts: R1
+  gather_facts: no
+  tasks:
+    - name: Configure loopback interfaces
+      ios_config:
+        parents: interface {{ item.name }}
+        lines:
+          - ip address {{ item.ip }}
+          - no shutdown
+        replace: block
+      with_items:
+        - { name: 'lo0', ip: '192.168.10.1 255.255.255.0' }
+        - { name: 'lo1', ip: '192.168.20.1 255.255.255.0' }
+
+    - name: Configure OSPF Protocol
+      ios_config:
+        parents: router ospf 1
+        lines:
+          - network {{ item.net }} area 1
+        replace: block
+      with_items:
+        - { net: '172.168.1.0 0.0.0.31' }
+        - { net: '192.168.2.0 0.0.0.3' }
+        - { net: '192.168.10.1 0.0.0.255' }
+        - { net: '192.168.20.1 0.0.0.255' }
+...

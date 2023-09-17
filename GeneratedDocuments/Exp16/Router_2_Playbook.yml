@@ -1,0 +1,52 @@
+---
+- name: Network Configuration Automation
+  hosts: R2
+  gather_facts: no
+
+  tasks:
+    - name: Interface Configuration for lo0
+      ios_config:
+        lines:
+          - ip address 192.168.30.1 255.255.255.0
+          - no shutdown
+        parents: interface lo0
+        replace: block
+
+    - name: Interface Configuration for lo1
+      ios_config:
+        lines:
+          - ip address 192.168.40.1 255.255.255.0
+          - no shutdown
+        parents: interface lo1
+        replace: block
+
+    - name: OSPF Protocol Configuration
+      ios_config:
+        parents: router ospf 1
+        lines:
+          - network 192.168.2.0 0.0.0.3 area 1
+          - network 192.168.30.1 0.0.0.255 area 1
+        replace: block
+
+    - name: EIGRP Protocol Configuration
+      ios_config:
+        parents: router eigrp 10
+        lines:
+          - network 192.168.4.0 0.0.0.3
+          - network 192.168.40.1 0.0.0.255
+        replace: block
+
+    - name: OSPF Redistribute into EIGRP
+      ios_config:
+        parents: router eigrp 10
+        lines:
+          - redistribute ospf 1 metric 1000 33 255 1 1500
+        replace: block
+
+    - name: EIGRP Redistribute into OSPF
+      ios_config:
+        parents: router ospf 1
+        lines:
+          - redistribute eigrp 10 subnets
+        replace: block
+...

@@ -1,0 +1,33 @@
+---
+- name: IOS Configuration
+  hosts: R1
+  
+  tasks:
+  - name: Configure lo0 interface
+    ios_config:
+      lines:
+        - description lo0 interface
+        - ip address 192.168.10.1 255.255.255.0
+        - no shutdown
+      parents: interface lo0
+      replace: block
+
+  - name: Configure lo1 interface
+    ios_config:
+      lines:
+        - description lo1 interface
+        - ip address 192.168.20.1 255.255.255.0
+        - no shutdown
+      parents: interface lo1
+      replace: block
+     
+  - name: OSPF configuration 
+    ios_config:
+      lines:
+        - network 172.168.1.0 0.0.0.31 area 1
+        - network 192.168.2.0 0.0.0.3 area 1
+        - network 192.168.10.1 0.0.0.255 area 1
+        - network 192.168.20.1 0.0.0.255 area 1
+      parents: router ospf 1
+      replace: block
+...

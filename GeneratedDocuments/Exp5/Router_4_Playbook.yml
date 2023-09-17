@@ -1,0 +1,30 @@
+---
+- hosts: R4
+  tasks:
+    - name: Configure interfaces
+      ios_config:
+        lines: 
+          - description lo0
+          - ip address 192.168.70.1 255.255.255.0
+          - no shutdown 
+        parents: interface lo0
+        replace: block
+
+    - name: Configure interfaces
+      ios_config:
+        lines: 
+          - description lo1
+          - ip address 192.168.80.1 255.255.255.0
+          - no shutdown 
+        parents: interface lo1
+        replace: block
+
+    - name: Configure OSPF routing protocol
+      ios_config:
+        lines:
+          - network 192.168.6.0 0.0.0.3 area 100
+          - network 192.168.70.1 0.0.0.255 area 100
+          - network 192.168.80.1 0.0.0.255 area 100
+        parents: router ospf 1
+        replace: block
+...

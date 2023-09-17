@@ -1,0 +1,52 @@
+---
+- name: Configure R3
+  hosts: R3
+  gather_facts: no
+  
+  tasks:
+  - name: Configure lo0 interface
+    ios_config:
+      parents: interface lo0
+      lines:
+      - ip address 192.168.50.1 255.255.255.0
+      - no shutdown
+      replace: block
+
+  - name: Configure lo1 interface
+    ios_config:
+      parents: interface lo1
+      lines:
+      - ip address 192.168.60.1 255.255.255.0
+      - no shutdown
+      replace: block
+
+  - name: Configure EIGRP routing protocol
+    ios_config:
+      parents: router eigrp 10
+      lines:
+      - network 192.168.4.0 0.0.0.3
+      - network 192.168.50.1 0.0.0.255
+      replace: block
+
+  - name: Configure OSPF routing protocol
+    ios_config:
+      parents: router ospf 1
+      lines:
+      - network 192.168.6.0 0.0.0.3 area 100
+      - network 192.168.60.1 0.0.0.255 area 100
+      replace: block
+     
+  - name: Redistribute OSPF into EIGRP
+    ios_config:
+      parents: router eigrp 10
+      lines:
+      - redistribute ospf 1 metric 1000 33 255 1 1500
+      replace: block
+  
+  - name: Redistribute EIGRP into OSPF
+    ios_config:
+      parents: router ospf 1
+      lines:
+      - redistribute eigrp 10 subnets
+      replace: block
+...

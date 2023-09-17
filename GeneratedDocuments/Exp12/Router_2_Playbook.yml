@@ -1,0 +1,51 @@
+---
+- hosts: R2
+  gather_facts: no
+  tasks:
+
+    - name: Configure lo0
+      ios_config:
+        lines:
+          - description Loopback 0
+          - no shutdown
+          - ip address 192.168.30.1 255.255.255.0
+        parents: interface lo0
+
+    - name: Configure lo1
+      ios_config:
+        lines:
+          - description Loopback 1
+          - no shutdown
+          - ip address 192.168.40.1 255.255.255.0
+        parents: interface lo1
+
+    - name: Configure OSPF
+      ios_config:
+        lines:
+          - network 192.168.2.0 0.0.0.3 area 1
+          - network 192.168.30.1 0.0.0.255 area 1
+        parents: router ospf 1
+        replace: block
+
+    - name: Configure EIGRP
+      ios_config:
+        lines:
+          - network 192.168.4.0 0.0.0.3
+          - network 192.168.40.1 0.0.0.255
+        parents: router eigrp 10
+        replace: block
+
+    - name: Redistribute OSPF into EIGRP
+      ios_config:
+        lines:
+          - redistribute ospf 1 metric 1000 33 255 1 1500
+        parents: router eigrp 10
+        replace: block
+
+    - name: Redistribute EIGRP into OSPF
+      ios_config:
+        lines:
+          - redistribute eigrp 10 subnets
+        parents: router ospf 1
+        replace: block
+...
